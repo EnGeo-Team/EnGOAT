@@ -1,4 +1,22 @@
 # EnGOAT
 
-<img src="images/logo.png" width="300">
-EnGOAT is a Python–Fortran package for analyzing potential energy surfaces (PES) of small species in crystalline solids. Based on the TuTraSt algorithm, it extends its capabilities with enhanced functionality, improved performance, and a user-friendly interface.
+<p align="center">
+  <img src="images/logo.png" width="300">
+</p>
+
+<p align="center">
+  <strong>EnGOAT</strong> is a Python–Fortran package for analyzing potential energy surfaces (PES)  
+  of small species in crystalline solids.
+</p>
+
+---
+
+## Overview
+
+Based on the TuTraSt algorithm, EnGOAT extends its capabilities with:
+
+- Enhanced functionality  
+- Improved performance  
+- A user-friendly interface  
+
+---
