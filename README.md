@@ -1,7 +1,7 @@
 # EnGOAT
 <p align="center">
 
-  <img src="images/logo.png" width="200">
+  <img src="images/logo.png" width="250">
 </p>
 <p align="center">
   <img src="https://img.shields.io/badge/license-MIT-green">
