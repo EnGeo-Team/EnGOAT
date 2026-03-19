@@ -1,7 +1,6 @@
 <p align="center">
-# EnGOAT
+  # EnGOAT
 
-  
   <img src="images/logo.png" width="300">
 </p>
 
