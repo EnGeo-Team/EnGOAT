@@ -1,12 +1,12 @@
 # EnGOAT
 <p align="center">
 
-  <img src="images/logo.png" width="300">
+  <img src="images/logo.png" width="200">
 </p>
 <p align="center">
+  <img src="https://img.shields.io/badge/license-MIT-green">
   <img src="https://img.shields.io/badge/python-3.10-blue">
   <img src="https://img.shields.io/badge/fortran-90%2B-orange">
-  <img src="https://img.shields.io/badge/license-MIT-green">
 </p>
 
 <p align="center">
