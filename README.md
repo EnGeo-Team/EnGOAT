@@ -3,7 +3,7 @@
 
   <img src="images/logo.png" width="250">
 </p>
-<p align="center">
+<p align="left">
   <img src="https://img.shields.io/badge/license-MIT-green">
   <img src="https://img.shields.io/badge/python-3.10-blue">
   <img src="https://img.shields.io/badge/fortran-90%2B-orange">
