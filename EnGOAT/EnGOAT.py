@@ -262,7 +262,7 @@ logger.info("")
 logger.info(f"{len(data.Tunnel_system.Tunnel_system_list)} tunnel systems were identified:")
 logger.info("-" * 80)
 
-os.makedirs("tunnel data", exist_ok=True)                                                                                           #Create a folder where tunnel systems will be saved as graph networks, where basins will be defined with their corresponding boltzmann weighted probabilities and a process list of possible transitions defined each with the corresponding rate
+os.makedirs("Tunnel_data", exist_ok=True)                                                                                           #Create a folder where tunnel systems will be saved as graph networks, where basins will be defined with their corresponding boltzmann weighted probabilities and a process list of possible transitions defined each with the corresponding rate
 Ea_abc = np.zeros(3)                                                                                                                #minimum energy barrier along a given crystal lattice direction
 Ea_abc[:] = E_cutoff
 margin = E_step                                                                                                                     #E tolerance for finding the best energy path along a direction (the paths that differ for at most this energy will be evaluated based on length)
@@ -346,7 +346,7 @@ for tunnel_system in data.Tunnel_system.Tunnel_system_list:
 
     #"""Save minimum energy pathways in a b c directions (if they exist) for the current tunnel system"""
     if path_a:
-        min_E_path_a = open(os.path.join("tunnel data", f"min_E_path_a_tunnel{tunnel_system.ID}.dat"), mode = "w")
+        min_E_path_a = open(os.path.join("Tunnel_data", f"min_E_path_a_tunnel{tunnel_system.ID}.dat"), mode = "w")
         min_E_path_a.write(f"Minimum energy pathway for tunnel system {tunnel_system.ID} in a direction\n")
         min_E_path_a.write(f"{'Start Basin ID':<15}{'End Basin ID':<15}{'TS ID':<15}{'Start Basin E':<15}{'End Basin E':<15}{'TS E':<15}{'Start Coord.':<15}{'End Coord.':<15}{'PBC Crossing':<15}\n")
         for cluster_idx in range(len(path_a)-1):
@@ -361,7 +361,7 @@ for tunnel_system in data.Tunnel_system.Tunnel_system_list:
         min_E_path_a.close()
 
     if path_b:
-        min_E_path_b = open(os.path.join("tunnel data", f"min_E_path_b_tunnel{tunnel_system.ID}.dat"), mode = "w")
+        min_E_path_b = open(os.path.join("Tunnel_data", f"min_E_path_b_tunnel{tunnel_system.ID}.dat"), mode = "w")
         min_E_path_b.write(f"Minimum energy pathway for tunnel system {tunnel_system.ID} in b direction\n")
         min_E_path_b.write(f"{'Start Basin ID':<15}{'End Basin ID':<15}{'TS ID':<15}{'Start Basin E':<15}{'End Basin E':<15}{'TS E':<15}{'Start Coord.':<15}{'End Coord.':<15}{'PBC Crossing':<15}\n")
         for cluster_idx in range(len(path_b)-1):
@@ -376,7 +376,7 @@ for tunnel_system in data.Tunnel_system.Tunnel_system_list:
         min_E_path_b.close()
 
     if path_c:
-        min_E_path_c = open(os.path.join("tunnel data", f"min_E_path_c_tunnel{tunnel_system.ID}.dat"), mode = "w")
+        min_E_path_c = open(os.path.join("Tunnel_data", f"min_E_path_c_tunnel{tunnel_system.ID}.dat"), mode = "w")
         min_E_path_c.write(f"Minimum energy pathway for tunnel system {tunnel_system.ID} in c direction\n")
         min_E_path_c.write(f"{'Start Basin ID':<15}{'End Basin ID':<15}{'TS ID':<15}{'Start Basin E':<15}{'End Basin E':<15}{'dE':<15}{'Start Coord.':<15}{'End Coord.':<15}{'PBC Crossing':<15}\n")
         for cluster_idx in range(len(path_c)-1):
@@ -398,7 +398,7 @@ logger.info("")
 
 if len(data.Tunnel_system.Tunnel_system_list)!=0 and run_kMC==1:                                                                    #If there is at least one tunnel system and user input for running kMC is 'yes', run the kMC simulations
     """For each temperature, compute reaction rate constants and run kMC simulations"""
-    os.makedirs("msd_files", exist_ok=True)                                                                                         #Create a folder where the msd files will be saved
+    os.makedirs("MSD_files", exist_ok=True)                                                                                         #Create a folder where the msd files will be saved
     kappa=0.5                                                                                                                       #Value for an ideal transition state
     mean_grid_size=sum(data.grid_size)*10**(-10)/3                                                                                  #Mean unit cell dimension in meters                    
     data.Cluster_matrix.IDs[data.TS_matrix.IDs != 0] = -1                                                                           #Set the minIDmatrix.Clusters values to -1 for TS points to avoid double counting TS points during the Boltzmann integration
@@ -448,7 +448,7 @@ if len(data.Tunnel_system.Tunnel_system_list)!=0 and run_kMC==1:                
                         process_list.append((str(process.end_cluster), float(process.k), tuple(int(x) for x in process.process_cross_vector)))
                 if len(process_list):                                                                                                #Exclude basins with no transition processes (happens due to 1 point cluster deletion)
                     graph_dict[str(cluster)] = (float(cluster_Boltzmann_weighted_V_fraction), process_list)
-            graph_network_file = open(os.path.join("tunnel data", f"Tunnel{tunnel_system.ID}T{T}.json"), mode = "w")
+            graph_network_file = open(os.path.join("Tunnel_data", f"tunnel{tunnel_system.ID}T{T}.json"), mode = "w")
             json.dump(graph_dict, graph_network_file, indent=None)
             graph_network_file.close()
 
@@ -536,15 +536,15 @@ file_handler.close()
 
 """Save simulation data"""
 
-os.makedirs("numpy matrices", exist_ok=True)                                                                                        #Create a folder where the numpy matrices generated during the TuTraSt analysis will be stored
-np.save(os.path.join("numpy matrices", "Level_matrix.npy"), data.level_matrix)
-np.save(os.path.join("numpy matrices", "Basin_matrix.npy"), data.Cluster_matrix.IDs)
-np.save(os.path.join("numpy matrices", "TS_matrix.npy"), data.TS_matrix.IDs)
-np.save(os.path.join("numpy matrices", "Tunnel_matrix.npy"), data.Tunnel_matrix.IDs)
-np.save(os.path.join("numpy matrices", "Energy_matrix.npy"), data.Energy_matrix)
+os.makedirs("NumPy_matrices", exist_ok=True)                                                                                        #Create a folder where the numpy matrices generated during the TuTraSt analysis will be stored
+np.save(os.path.join("NumPy_matrices", "Level_matrix.npy"), data.level_matrix)
+np.save(os.path.join("NumPy_matrices", "Basin_matrix.npy"), data.Cluster_matrix.IDs)
+np.save(os.path.join("NumPy_matrices", "TS_matrix.npy"), data.TS_matrix.IDs)
+np.save(os.path.join("NumPy_matrices", "Tunnel_matrix.npy"), data.Tunnel_matrix.IDs)
+np.save(os.path.join("NumPy_matrices", "Energy_matrix.npy"), data.Energy_matrix)
                                                        
 for tunnel_system in data.Tunnel_system.Tunnel_system_list:                                                                         #Save histogram files
-    histogram_file=open(os.path.join("tunnel data", f"tunnel{tunnel_system.ID}_hist.dat"), mode="w")
+    histogram_file=open(os.path.join("Tunnel_data", f"tunnel{tunnel_system.ID}_hist.dat"), mode="w")
     histogram_file.write(f"#Level No.\tLevel E [kJ/mol]\tN points\n")
     for levelm1, N_points in enumerate(tunnel_system.histogram):
         histogram_file.write(f"{levelm1+1:>9d}\t{(levelm1+1)*E_step:>13.2f}\t{int(N_points):>12d}\n")
@@ -554,8 +554,8 @@ a=np.array([data.grid[0][1], data.grid[0][2], data.grid[0][3]])
 b=np.array([data.grid[1][1], data.grid[1][2], data.grid[1][3]])
 c=np.array([data.grid[2][1], data.grid[2][2], data.grid[2][3]])                               
 voxel_V=abs(np.dot(a, np.cross(b, c))) 
-os.makedirs("TuTraSt data", exist_ok=True)                                                                                          #Create a folder where the numpy matrices generated during the TuTraSt analysis will be stored
-cluster_file=open(os.path.join("TuTraSt data", "basin_data.dat"), mode="w")
+os.makedirs("TuTraSt_data", exist_ok=True)                                                                                          #Create a folder where the numpy matrices generated during the TuTraSt analysis will be stored
+cluster_file=open(os.path.join("TuTraSt_data", "basin_data.dat"), mode="w")
 cluster_file.write(f"#{'Basin ID':20} {'Tunnel system':20} {'Center (a, b, c)':20} {'E_min [kJ]':20} {'Volume [Å^3]':20}")
 for T in T_list:
     cluster_file.write(f" V_Boltz T = {T:7.2f}   ")
@@ -578,7 +578,7 @@ for cluster in data.Cluster.Cluster_list:
         cluster_file.write(f"\n")
 cluster_file.close()
 
-TS_file=open(os.path.join("TuTraSt data", "TS_data.dat"), mode="w")
+TS_file=open(os.path.join("TuTraSt_data", "TS_data.dat"), mode="w")
 TS_file.write(f"{'#ID':<15}{'E_min [kJ/mol]':<15}{'Basin 1':<15}{'Basin 2':<15}\n")
 for TS in data.Transition_state.Transition_state_list:
     C1_ID, C2_ID = TS.clusters
@@ -586,7 +586,7 @@ for TS in data.Transition_state.Transition_state_list:
 TS_file.close()
 
 for tunnel_system in data.Tunnel_system.Tunnel_system_list:
-    tunnel_file=open(os.path.join("TuTraSt data", f"tunnel{tunnel_system.ID}_data.dat"), mode="w")
+    tunnel_file=open(os.path.join("TuTraSt_data", f"tunnel{tunnel_system.ID}_data.dat"), mode="w")
     tunnel_file.write(f"#Basin family:\n")
     family_string="{"
     for clusterID in tunnel_system.cluster_family:

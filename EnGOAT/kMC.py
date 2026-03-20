@@ -118,7 +118,7 @@ def kMC(tunnel_system, N_kMC_runs, N_kMC_steps, T, tunnel_idx):                 
 
                 """Save the MSD files for a b c directions"""
                 directions = ["a2", "b2", "c2"]
-                msd_file=open(os.path.join("msd_files", f"msd_T{T}_tunnel{tunnel_idx+1}_run{run+1}_direction{directions[direction]}.dat"), mode="w")
+                msd_file=open(os.path.join("MSD_files", f"msd_T{T}_tunnel{tunnel_idx+1}_run{run+1}_direction{directions[direction]}.dat"), mode="w")
                 for index in range(len(x_values)):
                     msd_file.write(f"{x_values[index]}\t{y_values[index]}\n")
                 msd_file.close()
@@ -140,7 +140,7 @@ def kMC(tunnel_system, N_kMC_runs, N_kMC_steps, T, tunnel_idx):                 
 
                 """Save the MSD files for x y z directions"""
                 directions = ["x2", "y2", "z2"]
-                msd_file=open(os.path.join("msd_files", f"msd_T{T}_tunnel{tunnel_idx+1}_run{run+1}_direction{directions[direction]}.dat"), mode="w")
+                msd_file=open(os.path.join("MSD_files", f"msd_T{T}_tunnel{tunnel_idx+1}_run{run+1}_direction{directions[direction]}.dat"), mode="w")
                 for index in range(len(x_values)):
                     msd_file.write(f"{x_values[index]}\t{y_values[index]}\n")
                 msd_file.close()
@@ -160,7 +160,7 @@ def kMC(tunnel_system, N_kMC_runs, N_kMC_steps, T, tunnel_idx):                 
             D_3D[run] = 1.0/6.0 * slope * 10**(-16)
 
             """Save the MSD files"""
-            msd_file=open(os.path.join("msd_files", f"msd_T{T}_tunnel{tunnel_idx+1}_run{run+1}_isotropic.dat"), mode="w")
+            msd_file=open(os.path.join("MSD_files", f"msd_T{T}_tunnel{tunnel_idx+1}_run{run+1}_isotropic.dat"), mode="w")
             for index in range(len(x_values)):
                 msd_file.write(f"{x_values[index]}\t{y_values[index]}\n")
             msd_file.close()
