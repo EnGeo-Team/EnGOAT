@@ -378,7 +378,7 @@ for tunnel_system in data.Tunnel_system.Tunnel_system_list:
     if path_c:
         min_E_path_c = open(os.path.join("Tunnel_data", f"min_E_path_c_tunnel{tunnel_system.ID}.dat"), mode = "w")
         min_E_path_c.write(f"Minimum energy pathway for tunnel system {tunnel_system.ID} in c direction\n")
-        min_E_path_c.write(f"{'Start Basin ID':<15}{'End Basin ID':<15}{'TS ID':<15}{'Start Basin E':<15}{'End Basin E':<15}{'dE':<15}{'Start Coord.':<15}{'End Coord.':<15}{'PBC Crossing':<15}\n")
+        min_E_path_c.write(f"{'Start Basin ID':<15}{'End Basin ID':<15}{'TS ID':<15}{'Start Basin E':<15}{'End Basin E':<15}{'TS E':<15}{'Start Coord.':<15}{'End Coord.':<15}{'PBC Crossing':<15}\n")
         for cluster_idx in range(len(path_c)-1):
             cluster1 = int(path_c[cluster_idx][0])
             cluster2 = int(path_c[cluster_idx+1][0])
