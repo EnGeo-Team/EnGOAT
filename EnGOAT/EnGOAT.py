@@ -607,9 +607,5 @@ for tunnel_system in data.Tunnel_system.Tunnel_system_list:
 
 """
 WARNING: basin==cluster in the code!
-
-IDEAS:
-
-make tutrast analysis at intermediate E levels
 """
 
