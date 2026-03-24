@@ -122,6 +122,14 @@ def plot_min_E_pathway(tunnel, direction):
                 t = np.linspace(0, 1, 100)
                 curve = np.array([bezier_quad(P0, P1, P2, ti) for ti in t])
                 plt.plot(curve[:, 0], curve[:, 1], color='black')
+                
+                if x2 > 1:
+                    P0_ = np.array([x0-1, y0])
+                    P1_ = np.array([xm-1, y1])  # transition state peak
+                    P2_ = np.array([x2-1, y2])
+                    t = np.linspace(0, 1, 100)
+                    curve = np.array([bezier_quad(P0_, P1_, P2_, ti) for ti in t])
+                    plt.plot(curve[:, 0], curve[:, 1], color='black')
 
                 plt.text(
                 xm,
@@ -138,6 +146,14 @@ def plot_min_E_pathway(tunnel, direction):
                 t = np.linspace(0, 1, 100)
                 curve = np.array([bezier_quad(P2, P1, P0, ti) for ti in t])
                 plt.plot(curve[:, 0], curve[:, 1], color='black')
+
+                if x2 < 0:
+                    P0_ = np.array([x0+1, y0])
+                    P1_ = np.array([xm+1, y1])  # transition state peak
+                    P2_ = np.array([x2+1, y2])
+                    t = np.linspace(0, 1, 100)
+                    curve = np.array([bezier_quad(P0_, P1_, P2_, ti) for ti in t])
+                    plt.plot(curve[:, 0], curve[:, 1], color='black')
 
                 plt.text(
                 xm,
@@ -276,4 +292,6 @@ for filename in os.listdir(folder):
 for tunnel in sorted(paths):
     print(f"Tunnel {tunnel}: directions {sorted(paths[tunnel])}")
     for direction in sorted(paths[tunnel]):
+        print(f"Plotting direction {direction}...")
         plot_min_E_pathway(tunnel, direction)
+        
