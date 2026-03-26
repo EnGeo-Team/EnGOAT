@@ -21,7 +21,8 @@ The structure of this repository is shown below:
 
 ```
 ./
-├── EnGOAT                               # Directory containing the EnGOAT software package
+├── EnGOAT/                              # Directory containing the EnGOAT software package
+│   └── ...
 │
 ├── Examples/                            # Examples 
 │   └── Li_ions_in_LGPS/
@@ -29,7 +30,7 @@ The structure of this repository is shown below:
 │       ├── Output_files
 │       └── Li_ions_in_LGPS_tutorial.pdf
 │
-├── Tools                                # Data visualization scripts
+├── Tools/                               # Data visualization scripts
 │   ├── MSD_plotter.py
 │   └── Minimum_E_Pathway_plotter.py
 │
