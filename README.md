@@ -25,9 +25,21 @@
 
 ## EnGOAT Instruction Manual and Examples
 
-Among the files in this repository is the _EnGOAT Instruction Manual_. This document provides an in-depth guide to using the software, beginning with system requirements and installation instructions, and continuing with a detailed description of the input files required to run the software, as well as the output files generated with the results. The manual also covers the use of the visualization tools available in the Tools directory of this repository. In the appendix, it includes a detailed explanation of the underlying algorithm and the calculation of the metrics produced by the software.
+This repository includes the **EnGOAT Instruction Manual**, which provides a comprehensive guide to using the software:
 
-For a more practical, hands-on guide to using the software, we refer readers to the tutorials provided in the _Examples_ directory. Each example highlights a potential use case of the EnGOAT software. For every example, the required input files, the generated output files, and a _.pdf_ document are provided. This document contains a step-by-step guide to running the software and tools, as well as interpreting the results.
+- **System Requirements & Installation** – Instructions to set up EnGOAT.
+- **Input Files** – Detailed description of the files required to run the software.
+- **Output Files** – Explanation of the generated results and metrics.
+- **Visualization Tools** – Guide to using the tools in the `Tools` directory.
+- **Appendix** – Detailed explanation of the underlying algorithm and calculation of metrics.
+
+For hands-on guidance, the **Examples** directory contains tutorials showcasing potential use cases of EnGOAT. Each example includes:
+
+- Required input files
+- Generated output files
+- A `.pdf` guide detailing:
+  - How to run the software and tools
+  - How to interpret the results
 
 ## Repository Overview
 
@@ -51,12 +63,6 @@ For a more practical, hands-on guide to using the software, we refer readers to 
 ├── LICENSE                              # License information
 └── logo.png
 ```
-
-## Getting Started
-
-For detailed information on system requirements and installation, see Section 2 of the _EnGOAT Instruction Manual_.
-
-For a step-by-step guide on running the software, along with practical considerations and guidance on result analysis, refer to the tutorials provided in the _Examples_ directory.
 
 ## Citation
 
