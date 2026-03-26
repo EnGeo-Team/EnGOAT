@@ -19,7 +19,7 @@
 
 The structure of this repository is shown below:
 
-```
+``
 .
 ├── EnGOAT/                              # Directory containing the EnGOAT software package
 │   ├── EnGOAT.py
@@ -52,5 +52,5 @@ The structure of this repository is shown below:
 ├── EnGOAT_Instruction_Manual.pdf        # Instruction manual of the EnGOAT software
 ├── README.md                            # Project overview (this file)
 └── LICENSE                              # License information
-```
+``
 
