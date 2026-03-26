@@ -21,18 +21,17 @@ The structure of this repository is shown below:
 
 ```
 .
-├── EnGOAT/                              # Directory containing the EnGOAT software package
+├── EnGOAT                               # Directory containing the EnGOAT software package
 │
 ├── Examples/                            # Examples 
 │   └── Li_ions_in_LGPS/
 │       ├── Input_files
 │       ├── Output_files
-│       └──Li_ions_in_LGPS_tutorial.pdf
+│       └── Li_ions_in_LGPS_tutorial.pdf
 │
-├── Tools/                               # Data visualization scripts
+├── Tools                                # Data visualization scripts
 │
-├── images/
-│   └── logo.png
+├── images
 │
 ├── EnGOAT_Instruction_Manual.pdf        # Instruction manual of the EnGOAT software
 ├── README.md                            # Project overview (this file)
