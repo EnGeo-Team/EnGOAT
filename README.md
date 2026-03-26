@@ -67,7 +67,7 @@ For hands-on guidance, the **Examples** directory contains tutorials showcasing 
 ## Citation
 
 If you use EnGOAT, please cite:
-
+```
 @article{TuTraSt,
   title={Automated multiscale approach to predict self-diffusion from a potential energy field},
   author={Mace, Amber and Barthel, Senja and Smit, Berend},
@@ -78,7 +78,7 @@ If you use EnGOAT, please cite:
   year={2019},
   publisher={ACS Publications}
 }
-
+```
 ## License
 
 This project is licensed under the MIT License.
