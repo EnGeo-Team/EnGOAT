@@ -17,6 +17,32 @@
 
 ## Overview
 
+The structure of this repository is shown in the tree diagram below:
 
+./
+├── EnGOAT/                              #Directory containing the EnGOAT software
+│   ├── EnGOAT.py
+│   ├── Organize_TuTraSt.py
+│   ├── PBC_minimax.py
+│   ├── Read_cube_data.py
+│   ├── data.py
+│   ├── find_neighbours.f90
+│   ├── find_new_clusters.py
+│   ├── get_process_cross_vector.f90
+│   ├── get_topological_descriptors.py
+│   ├── grow_clusters.py
+│   ├── initiate_cluster.f90
+│   ├── install.py
+│   └── kMC.py
+├── Examples/                            #Directory 
+│   └── Li_ions_in_LGPS
+├── EnGOAT_Instruction_Manual.pdf
+├── Tools/
+│   ├── MSD_plotter.py
+│   └── Minimum_E_Pathway_plotter.py
+└── images/
+    └── logo.png
+├── LICENSE
+├── README.md
 
 ---
