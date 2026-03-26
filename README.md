@@ -15,9 +15,15 @@
 
 ---
 
-## Overview
+## Features
 
-The structure of this repository is shown below:
+- **PES-based** calculation of geometric descriptors, such as accessible volume and surface area  
+- Identification and characterization of individual binding sites and transition states  
+- Detection of diffusive channel networks with associated energy barriers  
+- Efficient calculation of self-diffusion coefficients along crystallographic and Cartesian directions  
+- Identification and visualization of minimum energy diffusion pathways
+
+## Repository Overview
 
 ```
 ./
@@ -40,4 +46,34 @@ The structure of this repository is shown below:
 └── logo.png
 ```
 
+## Getting Started
 
+For detailed information on system requirements and installation, see Section 2 of the _EnGOAT Instruction Manual_.
+
+For a step-by-step guide on running the software, along with practical considerations and guidance on result analysis, refer to the tutorials provided in the _Examples_ directory.
+
+## Citation
+
+If you use EnGOAT, please cite:
+
+@article{TuTraSt,
+  title={Automated multiscale approach to predict self-diffusion from a potential energy field},
+  author={Mace, Amber and Barthel, Senja and Smit, Berend},
+  journal={Journal of chemical theory and computation},
+  volume={15},
+  number={4},
+  pages={2127--2141},
+  year={2019},
+  publisher={ACS Publications}
+}
+
+## License
+
+This project is licensed under the MIT License.
+
+## Authors
+
+Matevž Turk
+Department of Chemistry - Ångström Laboratory; Structural Chemistry
+
+Contact: matevz.turk@kemi.uu.se
