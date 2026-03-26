@@ -60,15 +60,26 @@ def plot_min_E_pathway(tunnel, direction):
     folder = "Tunnel_data"
     filepath = os.path.join(folder, filename)
     data = np.loadtxt(filepath, skiprows=2)
-    basin_ids = data[:, 0].astype(int)
-    end_ids   = data[:, 1].astype(int)
-    ts_ids    = data[:, 2].astype(int)
-    basin_E   = data[:, 3]
-    end_E     = data[:, 4]
-    TS_E        = data[:, 5]
-    basin_coords = data[:, 6]
-    end_coords = data[:, 7]
-    PBC_crossing = data[:, 8]
+    if data.ndim == 1:
+        basin_ids = [data[0].astype(int)]
+        end_ids   = [data[1].astype(int)]
+        ts_ids    = [data[2].astype(int)]
+        basin_E   = [data[3]]
+        end_E     = [data[4]]
+        TS_E        = [data[5]]
+        basin_coords = [data[6]]
+        end_coords = [data[7]]
+        PBC_crossing = [data[8]]
+    else:
+        basin_ids = data[:, 0].astype(int)
+        end_ids   = data[:, 1].astype(int)
+        ts_ids    = data[:, 2].astype(int)
+        basin_E   = data[:, 3]
+        end_E     = data[:, 4]
+        TS_E        = data[:, 5]
+        basin_coords = data[:, 6]
+        end_coords = data[:, 7]
+        PBC_crossing = data[:, 8]
 
     plt.figure(figsize=(15, 5))
 
@@ -104,6 +115,9 @@ def plot_min_E_pathway(tunnel, direction):
     for i in range(len(data)):
         j = i+1
         if i == len(data)-1:
+            j = 0
+        if data.ndim == 1:
+            i = 0
             j = 0
         x0 = basin_coords[i] + basin_width
         x2 = basin_coords[j] - basin_width
