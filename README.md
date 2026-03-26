@@ -1,7 +1,7 @@
 # EnGOAT
 <p align="center">
 
-  <img src="images/logo.png" width="250">
+  <img src="logo.png" width="250">
 </p>
 <p align="center">
   <img src="https://img.shields.io/badge/license-MIT-green">
@@ -20,7 +20,7 @@
 The structure of this repository is shown below:
 
 ```
-.
+./
 ├── EnGOAT                               # Directory containing the EnGOAT software package
 │
 ├── Examples/                            # Examples 
@@ -30,12 +30,13 @@ The structure of this repository is shown below:
 │       └── Li_ions_in_LGPS_tutorial.pdf
 │
 ├── Tools                                # Data visualization scripts
-│
-├── images
+│   ├── MSD_plotter.py
+│   └── Minimum_E_Pathway_plotter.py
 │
 ├── EnGOAT_Instruction_Manual.pdf        # Instruction manual of the EnGOAT software
 ├── README.md                            # Project overview (this file)
-└── LICENSE                              # License information
+├── LICENSE                              # License information
+└── logo.png
 ```
 
 
