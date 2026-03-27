@@ -113,7 +113,7 @@ def grow_clusters(level, E_step):
                                                 neighbour_cluster_point[4]+=j_crossing
                                                 neighbour_cluster_point[5]+=k_crossing
                                                 
-                                                current_cluster.cluster_points=np.vstack([current_cluster.cluster_points, neighbour_cluster_point])
+                                                current_cluster.cluster_points=np.vstack([current_cluster.cluster_points, neighbour_cluster_point.reshape(1, -1)])
                                                 data.Cluster_matrix.IDs[neighbour_cluster_point[0], neighbour_cluster_point[1], neighbour_cluster_point[2]]=current_cluster.ID                      #Fix the minID matrix inputs
                                             for neighbour_cluster_point_energy in neighbour_cluster.point_energies:
                                                 current_cluster.point_energies=np.append(current_cluster.point_energies, neighbour_cluster_point_energy)
@@ -143,7 +143,7 @@ def grow_clusters(level, E_step):
                                                         combining_cluster_point[5]+=k_crossing
 
                                             for neighbour_cluster_point in neighbour_cluster.cluster_points:                                                                                        #Add the points of the combining cluster to the current clusters point list
-                                                current_cluster.cluster_points=np.vstack([current_cluster.cluster_points, neighbour_cluster_point])
+                                                current_cluster.cluster_points=np.vstack([current_cluster.cluster_points, neighbour_cluster_point.reshape(1, -1)])
                                                 data.Cluster_matrix.IDs[neighbour_cluster_point[0], neighbour_cluster_point[1], neighbour_cluster_point[2]]=current_cluster.ID                      #Fix the minID matrix inputs
                                             for neighbour_cluster_point_energy in neighbour_cluster.point_energies:
                                                 current_cluster.point_energies=np.append(current_cluster.point_energies, neighbour_cluster_point_energy)
