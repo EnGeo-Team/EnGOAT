@@ -76,6 +76,9 @@ N_kMC_runs      = int(lines[7 + N_Temp])                                        
 particle_mass   = float(lines[8 + N_Temp])                                                                                          #Mass of the diffusing particle.
 cube_file       = lines[9 + N_Temp]                                                                                                 #Cube file name from which the energy matrix is read
 
+#TO BE IMPLEMENTED IN THE INPUT
+organize_isolated = False
+
 logger.info(">>> INITIALIZATION <<<")   
 logger.info("-"*80) 
 logger.info(f"{'Input file:':<25} {'input.param':>20}") 
@@ -251,7 +254,7 @@ for ID in boundary_clusters:
 
 """Organize transition state points into transition state surfaces, and identify tunnel systems"""                      
 Organize_TuTraSt.Organize_transition_states()                                                                                       #A python subroutine that organizes transition state points into transition states, fills the TS_matrix.IDs, and sets the minIDmatrix.Clusters values of TS points to -1
-Organize_TuTraSt.Organize_tunnel_systems(level_max)                                                                                 #A python subroutine that organizes recorded breakthroughs into cluster-family-wide tunnel systems          
+Organize_TuTraSt.Organize_tunnel_systems(level_max, organize_isolated)                                                              #A python subroutine that organizes recorded breakthroughs into cluster-family-wide tunnel systems          
 Total_area, Accessible_area, Total_volume, Total_volume_fraction, Accessible_volume = get_topological_descriptors.get_topological_descriptors(int(N_levels))
 
 logger.info(f"{'Total volume:':<25} {Total_volume:10.4f} Å³ {Total_volume_fraction:10.4f} %")
@@ -422,7 +425,7 @@ if len(data.Tunnel_system.Tunnel_system_list)!=0 and run_kMC==1:                
             logger.info("") 
             logger.info(f"Tunnel system {tunnel_system.ID}, weight = {tunnel_system.Boltzmann_weighted_V_fraction}")
             logger.info("-" * 80)
-            logger.info(f"{'Run':>8} {'D_a (m²/s)':>15} {'D_b (m²/s)':>15} {'D_c (m²/s)':>15} {'Δt (s)':>10} {'total (s)':>10}")
+            logger.info(f"{'Run':>8} {'D_a (cm²/s)':>15} {'D_b (cm²/s)':>15} {'D_c (cm²/s)':>15} {'Δt (s)':>10} {'total (s)':>10}")
             logger.info("-" * 80)   
             for process in tunnel_system.process_list:
                 TS_mask=(data.TS_matrix.IDs==process.transition_state)                                                              #Find all points belonging to the current transition state
@@ -435,21 +438,21 @@ if len(data.Tunnel_system.Tunnel_system_list)!=0 and run_kMC==1:                
                 distance=distance*data.grid_size
                 process.distance=distance
             
-            """Save the graph networks and boltzmann volume distribution of basins for a given tunnel system at a given temperature in the folder 'tunnel graph networks'"""
+            """Save the graph networks of basins for a given tunnel system at a given temperature in the folder 'Tunnel_data'"""
             graph_dict={}                                                                                                           #Create a dictionary of all possible transitions (in all 3 directions)
-            basin_hist_values = []
             for cluster in tunnel_system.cluster_family:
                 cluster_mask = (data.Cluster_matrix.IDs==cluster)
                 cluster_Boltzmann_weighted_V_fraction = np.sum(np.exp(-1000*Beta*(data.Energy_matrix[cluster_mask])))/Total_boltzmann_weighted_volume
-                basin_hist_values.append(cluster_Boltzmann_weighted_V_fraction)
                 process_list = []
                 for process in tunnel_system.process_list:
                     if process.start_cluster == cluster:
                         process_list.append((str(process.end_cluster), float(process.k), tuple(int(x) for x in process.process_cross_vector)))
-                if len(process_list):                                                                                                #Exclude basins with no transition processes (happens due to 1 point cluster deletion)
-                    graph_dict[str(cluster)] = (float(cluster_Boltzmann_weighted_V_fraction), process_list)
+                #if len(process_list):                                                                                                #Exclude basins with no transition processes (happens due to 1 point cluster deletion)
+                graph_dict[str(cluster)] = (data.Cluster.Cluster_list[int(cluster)-1].center, float(cluster_Boltzmann_weighted_V_fraction), process_list)
+            print(graph_dict)
             graph_network_file = open(os.path.join("Tunnel_data", f"tunnel{tunnel_system.ID}T{T}.json"), mode = "w")
-            json.dump(graph_dict, graph_network_file, indent=None)
+            json.dump(graph_dict, graph_network_file, default=lambda x: x.item(), indent=None)
+            #json.dump(graph_dict, graph_network_file, indent=None)
             graph_network_file.close()
 
             D, D_xyz, D_3D = kMC.kMC(tunnel_system, N_kMC_runs, N_kMC_steps, T, tunnel_idx)                                          #Run kMC simulations
@@ -504,7 +507,7 @@ logger.info("-" * 80)
 if len(data.Tunnel_system.Tunnel_system_list)!=0 and run_kMC==1:
     logger.info("Diffusion coefficients")
     logger.info("-" * 80)
-    logger.info(f"{'T (K)':>8}  {'D_a (m²/s) ± σ':>22}  {'D_b (m²/s) ± σ':>22}  {'D_c (m²/s) ± σ':>21}")
+    logger.info(f"{'T (K)':>8}  {'D_a (cm²/s) ± σ':>22}  {'D_b (cm²/s) ± σ':>22}  {'D_c (cm²/s) ± σ':>21}")
     logger.info("-" * 80)
     for i, T in enumerate(T_list):
         logger.info(f"{T:8.1f}  "
@@ -515,7 +518,7 @@ if len(data.Tunnel_system.Tunnel_system_list)!=0 and run_kMC==1:
 elif len(data.Tunnel_system.Tunnel_system_list)==0 and run_kMC==1:
     logger.info("Diffusion coefficients")
     logger.info("-" * 80)
-    logger.info(f"{'T (K)':>8}  {'D_a (m²/s) ± σ':>22}  {'D_b (m²/s) ± σ':>22}  {'D_c (m²/s) ± σ':>21}")
+    logger.info(f"{'T (K)':>8}  {'D_a (cm²/s) ± σ':>22}  {'D_b (cm²/s) ± σ':>22}  {'D_c (cm²/s) ± σ':>21}")
     logger.info("-" * 80)
     for i, T in enumerate(T_list):
         logger.info(f"{T:8.1f}  "
