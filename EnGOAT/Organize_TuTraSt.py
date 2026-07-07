@@ -82,14 +82,16 @@ def get_isolated_processes(cluster_family):
             dE_1=transition_state.E_min-cluster1.E_min
             dE_2=transition_state.E_min-cluster2.E_min
 
+            transition_state.Process_cross_vector = process_cross_vector
+
             processforward=data.Process(C1_C2_TS[0], C1_C2_TS[1], C1_C2_TS[2], start_point, end_point, dE_1, process_cross_vector)
-            #processbackward=data.Process(C1_C2_TS[1], C1_C2_TS[0], C1_C2_TS[2], end_point, start_point, dE_2, -process_cross_vector)
+            processbackward=data.Process(C1_C2_TS[1], C1_C2_TS[0], C1_C2_TS[2], end_point, start_point, dE_2, -process_cross_vector)
             #logger.debug(f"Transition from {processforward.start_cluster} to {processforward.end_cluster}, dE={processforward.dE}")
             #logger.debug(f"starting point -> end point: {processforward.start_point}->{processforward.end_point}. Crossing vector: {processforward.process_cross_vector}")
             if tuple(process_cross_vector)==(100, 100, 100):                                        #Safety check in case the fortran subroutine didn't find the crossing vector
                     logger.warning("Endpoint for this process was not found!")
         process_list.append(processforward)
-        #process_list.append(processbackward)
+        process_list.append(processbackward)
 
     return process_list
 
@@ -118,7 +120,8 @@ def Organize_tunnel_systems(level_max, organize_isolated):
                     start_string=f"[{a_start}, {b_start}, {c_start}]"
                     end_string=f"[{a_end}, {b_end}, {c_end}]"
                     cross_string=f"({a_cross}, {b_cross}, {c_cross})"
-                    iso_file.write(f"{process.start_cluster:>14} \t {process.end_cluster:>10} \t{process.transition_state:>15} \t {process.dE:>12.6f} \t {start_string:>20} {end_string:>20} {cross_string:>20} {cluster_family}\n")
+                    C_family = {int(x) for x in cluster_family}
+                    iso_file.write(f"{process.start_cluster:>14} \t {process.end_cluster:>10} \t{process.transition_state:>15} \t {process.dE:>12.6f} \t {start_string:>20} {end_string:>20} {cross_string:>20}\t {C_family}\n")
             continue
 
         height=level_max                                                                                #The energy level of the lowest energy point within the tunnel system
@@ -155,6 +158,7 @@ def Organize_tunnel_systems(level_max, organize_isolated):
                     if point.coordinates==tuple(transition_state.TS_points[0]):
                         process_cross_vector=np.array(point.cross_vector)
                 dE=transition_state.E_min-cluster1.E_min
+                transition_state.Process_cross_vector = process_cross_vector
 
                 processforward=data.Process(cluster1_ID, cluster1_ID, transition_state.ID, start_point, start_point, dE, process_cross_vector)
                 processbackward=data.Process(cluster1_ID, cluster1_ID, transition_state.ID, start_point, start_point, dE, -process_cross_vector)
@@ -180,6 +184,8 @@ def Organize_tunnel_systems(level_max, organize_isolated):
                 
                 dE_1=transition_state.E_min-cluster1.E_min
                 dE_2=transition_state.E_min-cluster2.E_min
+
+                transition_state.Process_cross_vector = process_cross_vector
 
                 processforward=data.Process(C1_C2_TS[0], C1_C2_TS[1], C1_C2_TS[2], start_point, end_point, dE_1, process_cross_vector)
                 processbackward=data.Process(C1_C2_TS[1], C1_C2_TS[0], C1_C2_TS[2], end_point, start_point, dE_2, -process_cross_vector)

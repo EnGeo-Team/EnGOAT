@@ -20,7 +20,7 @@ def minimax_periodic(adj, source, target_offset):
             continue
 
         # Goal reached
-        if u == source and offset == target_offset:
+        if u == source and offset >= target_offset:
 
             path = []
             state = (u, offset)

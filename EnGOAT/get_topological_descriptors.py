@@ -71,6 +71,41 @@ def get_topological_descriptors(N_levels):
     print(Total_volume)
     return Total_area, Accessible_area, Total_volume, Total_volume_fraction, Accessible_volume
 
+def Get_basin_area(basin_ID, Basin_matrix):
+
+    # Unit cell vectors
+    a = np.array([data.grid[0][1], data.grid[0][2], data.grid[0][3]])
+    b = np.array([data.grid[1][1], data.grid[1][2], data.grid[1][3]])
+    c = np.array([data.grid[2][1], data.grid[2][2], data.grid[2][3]])
+
+    # Face areas
+    ab = np.linalg.norm(np.cross(a, b))   # z-faces
+    ac = np.linalg.norm(np.cross(a, c))   # y-faces
+    bc = np.linalg.norm(np.cross(b, c))   # x-faces
+
+    basin_points = np.argwhere(Basin_matrix == basin_ID)
+
+    area = 0.0
+
+    for point in basin_points:
+
+        x_neighbours, y_neighbours, z_neighbours = PBC3D_neighbours(point)
+
+        for neighbour in x_neighbours:
+            if Basin_matrix[neighbour] != basin_ID:
+                area += bc
+
+        for neighbour in y_neighbours:
+            if Basin_matrix[neighbour] != basin_ID:
+                area += ac
+
+        for neighbour in z_neighbours:
+            if Basin_matrix[neighbour] != basin_ID:
+                area += ab
+
+    return area
+
+
 def PBC3D_neighbours(point):                                                                            #Subroutine that finds PBC neighbours of a given point
     i, j, k = point
     Nx, Ny, Nz = data.grid[0][0], data.grid[1][0], data.grid[2][0]

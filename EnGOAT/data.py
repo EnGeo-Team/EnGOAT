@@ -82,6 +82,7 @@ class Transition_state:                                                 #Individ
         self.TS_points=TS_points                                        #List of all points belonging to a given transition state plane between the two clusters (saved as tuples (i, j, k))
         self.point_energies=point_energies                              #List of all energies of the corresponding points in the TS
         self.E_min=E_min                                                #Energy value of the lowest energy point on the transition state surface
+        self.Process_cross_vector = None                                #PBC crossing information
     Transition_state_list=[]                                            #List of all identified transition states
 
 class Tunnel:                                                           #Unique breakthroughs recorded are saved as objects with the following attributes:

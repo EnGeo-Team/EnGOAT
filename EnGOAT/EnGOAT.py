@@ -77,7 +77,7 @@ particle_mass   = float(lines[8 + N_Temp])                                      
 cube_file       = lines[9 + N_Temp]                                                                                                 #Cube file name from which the energy matrix is read
 
 #TO BE IMPLEMENTED IN THE INPUT
-organize_isolated = False
+organize_isolated = True
 
 logger.info(">>> INITIALIZATION <<<")   
 logger.info("-"*80) 
@@ -266,8 +266,6 @@ logger.info(f"{len(data.Tunnel_system.Tunnel_system_list)} tunnel systems were i
 logger.info("-" * 80)
 
 os.makedirs("Tunnel_data", exist_ok=True)                                                                                           #Create a folder where tunnel systems will be saved as graph networks, where basins will be defined with their corresponding boltzmann weighted probabilities and a process list of possible transitions defined each with the corresponding rate
-Ea_abc = np.zeros(3)                                                                                                                #minimum energy barrier along a given crystal lattice direction
-Ea_abc[:] = E_cutoff
 margin = E_step                                                                                                                     #E tolerance for finding the best energy path along a direction (the paths that differ for at most this energy will be evaluated based on length)
 for tunnel_system in data.Tunnel_system.Tunnel_system_list:
     logger.info(f"Tunnel system #{tunnel_system.ID}")
@@ -301,50 +299,53 @@ for tunnel_system in data.Tunnel_system.Tunnel_system_list:
     energies=tunnel_system.direction_breakthroughs*E_step
     directions, energies = directions[np.argsort(energies)], np.sort(energies)
 
+    #Run the minimax algorithm to get the minimum energy barriers along given directions
+    Ea_a=E_cutoff
+    Ea_b=E_cutoff
+    Ea_c=E_cutoff
     path_a=None
     path_b=None
     path_c=None
-    for idx, direction in enumerate(directions):                                                                                    #Run the minimax algorithm to get the minimum energy barriers along given directions
+    a_break = any(d[0] != 0 for d in directions)
+    b_break = any(d[1] != 0 for d in directions)
+    c_break = any(d[2] != 0 for d in directions)
 
-        Ea_a=E_cutoff
-        Ea_b=E_cutoff
-        Ea_c=E_cutoff
+    if a_break:   
         for cluster in tunnel_system.cluster_family:
-            if direction[0]!=0:
-                E_barrier_a, possible_path_a =PBC_minimax.minimax_periodic(graph_dict_a, str(cluster), direction[0])
-                if E_barrier_a <= Ea_a+ margin:
-                    if path_a is None or len(path_a) > len(possible_path_a):
-                        path_a = possible_path_a
-                        Ea_a = E_barrier_a
-                    else:
-                        continue
-            else:
-                Ea_a = E_cutoff
-            if direction[1]!=0:
-                E_barrier_b, possible_path_b = PBC_minimax.minimax_periodic(graph_dict_b, str(cluster), direction[1])
-                if E_barrier_b <= Ea_b+ margin:
-                    if path_b is None or len(path_b) > len(possible_path_b):
-                        path_b = possible_path_b
-                        Ea_b = E_barrier_b
-                    else:
-                        continue
-            else:
-                Ea_b = E_cutoff
-            if direction[2]!=0:
-                E_barrier_c, possible_path_c = PBC_minimax.minimax_periodic(graph_dict_c, str(cluster), direction[2])
-                if E_barrier_c <= Ea_c+ margin:
-                    if path_c is None or len(path_c) > len(possible_path_c):
-                        path_c = possible_path_c
-                        Ea_c = E_barrier_c
-                    else:
-                        continue                    
-            else:
-                Ea_c = E_cutoff
-        Ea_abc[0] = min(Ea_a, Ea_abc[0])
-        Ea_abc[1] = min(Ea_b, Ea_abc[1])
-        Ea_abc[2] = min(Ea_c, Ea_abc[2])
+            E_barrier_a, possible_path_a =PBC_minimax.minimax_periodic(graph_dict_a, str(cluster), 1)
+            if E_barrier_a <= Ea_a+ margin:
+                if path_a is None or len(path_a) > len(possible_path_a):
+                    path_a = possible_path_a
+                    Ea_a = E_barrier_a
+                else:
+                    continue
+    if b_break:
+        for cluster in tunnel_system.cluster_family:
+            E_barrier_b, possible_path_b = PBC_minimax.minimax_periodic(graph_dict_b, str(cluster), 1)
+            if E_barrier_b <= Ea_b+ margin:
+                if path_b is None or len(path_b) > len(possible_path_b):
+                    path_b = possible_path_b
+                    Ea_b = E_barrier_b
+                else:
+                    continue
+    if c_break:
+        for cluster in tunnel_system.cluster_family:
+            E_barrier_c, possible_path_c = PBC_minimax.minimax_periodic(graph_dict_c, str(cluster), 1)
+            if E_barrier_c <= Ea_c+ margin:
+                if path_c is None or len(path_c) > len(possible_path_c):
+                    path_c = possible_path_c
+                    Ea_c = E_barrier_c
 
-        Ea=min(Ea_a, Ea_b, Ea_c)
+    for idx, direction in enumerate(directions):
+        E_abc = np.array([E_cutoff, E_cutoff, E_cutoff])
+        if direction[0]:
+            E_abc[0] = Ea_a
+        if direction[1]:
+            E_abc[1] = Ea_b
+        if direction[2]:
+            E_abc[2] = Ea_c
+
+        Ea=min(E_abc)
         logger.info(f"  {str(direction):12}{Ea:10.4f}")
 
     #"""Save minimum energy pathways in a b c directions (if they exist) for the current tunnel system"""
@@ -447,12 +448,9 @@ if len(data.Tunnel_system.Tunnel_system_list)!=0 and run_kMC==1:                
                 for process in tunnel_system.process_list:
                     if process.start_cluster == cluster:
                         process_list.append((str(process.end_cluster), float(process.k), tuple(int(x) for x in process.process_cross_vector)))
-                #if len(process_list):                                                                                                #Exclude basins with no transition processes (happens due to 1 point cluster deletion)
                 graph_dict[str(cluster)] = (data.Cluster.Cluster_list[int(cluster)-1].center, float(cluster_Boltzmann_weighted_V_fraction), process_list)
-            print(graph_dict)
             graph_network_file = open(os.path.join("Tunnel_data", f"tunnel{tunnel_system.ID}T{T}.json"), mode = "w")
             json.dump(graph_dict, graph_network_file, default=lambda x: x.item(), indent=None)
-            #json.dump(graph_dict, graph_network_file, indent=None)
             graph_network_file.close()
 
             D, D_xyz, D_3D = kMC.kMC(tunnel_system, N_kMC_runs, N_kMC_steps, T, tunnel_idx)                                          #Run kMC simulations
@@ -490,16 +488,16 @@ logger.info(f"  {'Accessible:':<15} {Accessible_area:10.4f} Å² {Accessible_are
 logger.info("-" * 80)
 logger.info("Breakthrough energies")
 logger.info("-" * 80)
-if breakthrough_level[0]!=level_max and Ea_abc[0]<E_cutoff:
-    logger.info(f"{'Direction a:    level'} {breakthrough_level[0]:>3}    E = {breakthrough_level[0]*E_step:10.3f} kJ/mol     ΔE = {Ea_abc[0]:10.3f} kJ/mol")
+if breakthrough_level[0]!=level_max and Ea_a<E_cutoff:
+    logger.info(f"{'Direction a:    level'} {breakthrough_level[0]:>3}    E = {breakthrough_level[0]*E_step:10.3f} kJ/mol     ΔE = {Ea_a:10.3f} kJ/mol")
 else:
     logger.info(f"{'Direction a:    level'} {'/':>3}    E = {'/':10} kJ/mol     ΔE = {'/':10} kJ/mol")
-if breakthrough_level[1]!=level_max and Ea_abc[0]<E_cutoff: 
-    logger.info(f"{'Direction b:    level'} {breakthrough_level[1]:>3}    E = {breakthrough_level[1]*E_step:10.3f} kJ/mol     ΔE = {Ea_abc[1]:10.3f} kJ/mol")
+if breakthrough_level[1]!=level_max and Ea_b<E_cutoff: 
+    logger.info(f"{'Direction b:    level'} {breakthrough_level[1]:>3}    E = {breakthrough_level[1]*E_step:10.3f} kJ/mol     ΔE = {Ea_b:10.3f} kJ/mol")
 else:
     logger.info(f"{'Direction b:    level'} {'/':>3}    E = {'/':10} kJ/mol     ΔE = {'/':10} kJ/mol")
-if breakthrough_level[2]!=level_max and Ea_abc[0]<E_cutoff: 
-    logger.info(f"{'Direction c:    level'} {breakthrough_level[2]:>3}    E = {breakthrough_level[2]*E_step:10.3f} kJ/mol     ΔE = {Ea_abc[2]:10.3f} kJ/mol")
+if breakthrough_level[2]!=level_max and Ea_c<E_cutoff: 
+    logger.info(f"{'Direction c:    level'} {breakthrough_level[2]:>3}    E = {breakthrough_level[2]*E_step:10.3f} kJ/mol     ΔE = {Ea_c:10.3f} kJ/mol")
 else:
     logger.info(f"{'Direction c:    level'} {'/':>3}    E = {'/':10} kJ/mol     ΔE = {'/':10} kJ/mol")
 logger.info("-" * 80)
@@ -558,8 +556,9 @@ b=np.array([data.grid[1][1], data.grid[1][2], data.grid[1][3]])
 c=np.array([data.grid[2][1], data.grid[2][2], data.grid[2][3]])                               
 voxel_V=abs(np.dot(a, np.cross(b, c))) 
 os.makedirs("TuTraSt_data", exist_ok=True)                                                                                          #Create a folder where the numpy matrices generated during the TuTraSt analysis will be stored
+
 cluster_file=open(os.path.join("TuTraSt_data", "basin_data.dat"), mode="w")
-cluster_file.write(f"#{'Basin ID':20} {'Tunnel system':20} {'Center (a, b, c)':20} {'E_min [kJ]':20} {'Volume [Å^3]':20}")
+cluster_file.write(f"#{'Basin ID':20} {'Tunnel system':20} {'Center (a, b, c)':20} {'E_min [kJ]':20} {'Volume [Å^3]':20} {'Area [Å^2]':20}")
 for T in T_list:
     cluster_file.write(f" V_Boltz T = {T:7.2f}   ")
 cluster_file.write(f"\n")
@@ -572,7 +571,8 @@ for cluster in data.Cluster.Cluster_list:
             if ID in tunnel_system.cluster_family:
                 Tunnelsystem = tunnel_system.ID
         Volume = np.count_nonzero(data.Cluster_matrix.IDs == ID)*voxel_V
-        cluster_file.write(f"{ID:<20} {Tunnelsystem:<20} ({int(a_center):4}, {int(b_center):4}, {int(c_center):4})    {cluster.E_min:<20.4f} {Volume:<20.4f}")
+        Area = get_topological_descriptors.Get_basin_area(ID, data.Cluster_matrix.IDs)
+        cluster_file.write(f"{ID:<20} {Tunnelsystem:<20} ({int(a_center):4}, {int(b_center):4}, {int(c_center):4})    {cluster.E_min:<20.4f} {Volume:<20.4f} {Area:<20.4f}")
         for T in T_list:
             Beta=1/(constants.R*T)
             cluster_mask = (data.Cluster_matrix.IDs==ID)
@@ -582,10 +582,10 @@ for cluster in data.Cluster.Cluster_list:
 cluster_file.close()
 
 TS_file=open(os.path.join("TuTraSt_data", "TS_data.dat"), mode="w")
-TS_file.write(f"{'#ID':<15}{'E_min [kJ/mol]':<15}{'Basin 1':<15}{'Basin 2':<15}\n")
+TS_file.write(f"{'#ID':<15}{'E_min [kJ/mol]':<15}{'Basin 1':<15}{'Basin 2':<15}{"Cross vector"}\n")
 for TS in data.Transition_state.Transition_state_list:
     C1_ID, C2_ID = TS.clusters
-    TS_file.write(f"{int(TS.ID):<15d}{TS.E_min:<15.4f}{int(C1_ID):<15}{int(C2_ID):<15}\n")
+    TS_file.write(f"{int(TS.ID):<15d}{TS.E_min:<15.4f}{int(C1_ID):<15}{int(C2_ID):<15}{TS.Process_cross_vector}\n")
 TS_file.close()
 
 for tunnel_system in data.Tunnel_system.Tunnel_system_list:
