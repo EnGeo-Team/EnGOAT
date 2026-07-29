@@ -449,7 +449,7 @@ logger.info("")
 #Create a master dictionary storing all metadata collected during the TuTraSt analysis
 EnGOAT_data = {"metadata": metadata, "unit_cell": unit_cell, "atoms": atoms, "basin_data": basin_data, "TS_data": TS_data, "tunnel_systems": tunnel_systems, "isolated_groups": isolated_groups, "kMC_data": None}
 
-
+Diffusion = None
 """Run the kMC simulations"""
 if len(data.Tunnel_system.Tunnel_system_list)!=0 and run_kMC==1:                                                                    #If there is at least one tunnel system and user input for running kMC is 'yes', run the kMC simulations
     
