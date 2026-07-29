@@ -187,30 +187,7 @@ logger.info(f"Potential grid analyzed successfully in {time.process_time()-timer
 logger.info("")
 
 logger.info(">>> TUTRAST ANALYSIS <<<")
-timer_organization=time.process_time()
-
-"""Remove all 1-point clusters (noise)"""                       
-for cluster in data.Cluster.Cluster_list:                       
-    if cluster.active:                      
-        if len(cluster.cluster_points)==1:                      
-            i_remove=cluster.cluster_points[0][0]                       
-            j_remove=cluster.cluster_points[0][1]                       
-            k_remove=cluster.cluster_points[0][2]                       
-            data.Cluster_matrix.IDs[i_remove, j_remove, k_remove]=0                                                                 #Remove the minID matrix input of this cluster, set ID to 0
-
-            for TS in data.TS_point.TS_point_list[:]:                                                                               #Remove all transition states of this cluster
-                data.TS_matrix.Levels[TS.coordinates[0], TS.coordinates[1], TS.coordinates[2]] = 0                                  #Remove the TS_matrix entry of the transition state
-                if cluster.ID in TS.clusters:                       
-                    TS.clusters.remove(cluster.ID)                      
-                    remaining_ID, = TS.clusters                     
-                    for point in data.Cluster.Cluster_list[remaining_ID-1].cluster_points:                                          #Unset the point in the neighbouring cluster as TS
-                        if (point[0], point[1], point[2]) == TS.coordinates:                        
-                            point[8] = 0                        
-                    data.TS_point.TS_point_list.remove(TS)                                                                          #Remove the transition state from TS_point_list                                             
-            for cluster_family in data.Cluster.Cluster_families:                                                                    #Remove this cluster from all cluster families
-                if cluster.ID in cluster_family:                        
-                    cluster_family.remove(cluster.ID)                       
-            cluster.active=False                                                                                                    #Inactivate the cluster
+timer_organization=time.process_time()                                                                                
 
 """Identify clusters at the boundary of the unit cell"""        
 border_mask = np.zeros(data.Cluster_matrix.IDs.shape, dtype=bool)        
