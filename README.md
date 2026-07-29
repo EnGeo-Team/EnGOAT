@@ -23,8 +23,11 @@
 - Efficient calculation of self-diffusion coefficients along crystallographic and Cartesian directions  
 - Identification and visualization of minimum energy diffusion pathways
 
-## EnGOAT Instruction Manual and Examples
+## Using EnGOAT
 
+To use the software, download the EnGOAT package and run the installation script install.py to pip install all required python libraries. Then, simply run EnGOAT/EnGOAT.py to run the EnGOAT analysis software, or EnGOAT_visualization_tool/main.py to run the visualization application.
+
+<!-- This is a comment 
 This repository includes the **EnGOAT Instruction Manual**, which provides a comprehensive guide to using the software:
 
 - **System Requirements & Installation** – Instructions to set up EnGOAT.
@@ -63,7 +66,7 @@ For hands-on guidance, the **Examples** directory contains tutorials showcasing 
 ├── LICENSE                              # License information
 └── logo.png
 ```
-
+-->
 ## Citation
 
 If you use EnGOAT, please cite:
@@ -85,7 +88,7 @@ This project is licensed under the MIT License.
 
 ## Authors
 
-Matevž Turk
+Matevž Turk,
 Department of Chemistry - Ångström Laboratory; Structural Chemistry
 
 Contact: matevz.turk@kemi.uu.se
