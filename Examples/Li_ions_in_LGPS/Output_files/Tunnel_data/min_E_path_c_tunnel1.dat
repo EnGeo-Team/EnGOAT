@@ -1,8 +1,0 @@
-Minimum energy pathway for tunnel system 1 in c direction
-Start Basin ID End Basin ID   TS ID          Start Basin E  End Basin E    TS E           Start Coord.   End Coord.     PBC Crossing   
-7              8              9              5.8672         7.8156         20.4981        0.5000         0.6562         0              
-8              17             1              7.8156         7.6375         16.5280        0.6562         0.8125         0              
-17             11             15             7.6375         5.8672         21.4983        0.8125         0.0000         1              
-11             12             11             5.8672         7.8156         20.4981        0.0000         0.1562         0              
-12             13             3              7.8156         7.6375         16.5280        0.1562         0.3125         0              
-13             7              12             7.6375         5.8672         21.4983        0.3125         0.5000         0              
