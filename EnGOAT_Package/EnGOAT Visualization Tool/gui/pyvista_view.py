@@ -218,14 +218,14 @@ class PyVistaView(QWidget):
         print("0    %")
         self.create_atom_actors()
         print("20    %")
-        #self.create_bond_actors()
-        #print("40    %")
-        #self.create_isosurface_actors()
-        #print("60    %")
-        #self.create_basin_actors()
-        #print("80    %")
-        #self.create_TS_actors()
-        #print("100    %")
+        self.create_bond_actors()
+        print("40    %")
+        self.create_isosurface_actors()
+        print("60    %")
+        self.create_basin_actors()
+        print("80    %")
+        self.create_TS_actors()
+        print("100    %")
 
         return None
 
@@ -233,10 +233,10 @@ class PyVistaView(QWidget):
 
         self.update_UC_actors()
         self.update_atom_actors()
-        #self.update_bond_actors()
-        #self.update_isosurface_actors()
-        #self.update_basin_actors()
-        #self.update_TS_actors()
+        self.update_bond_actors()
+        self.update_isosurface_actors()
+        self.update_basin_actors()
+        self.update_TS_actors()
 
         self.plotter.render()
 
