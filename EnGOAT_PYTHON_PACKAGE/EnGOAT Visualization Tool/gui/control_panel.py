@@ -97,12 +97,16 @@ class ControlPanel(QWidget):
         # A dictionary where all buttons are stored
         widgets = {}
 
-        # Once the project is set, build all the control buttons and set their states
-        widgets["UC_panel"] = self.build_UC_panel()
-        widgets["isosurface_panel"] = self.build_isosurface_panel()
-        widgets["TuTraSt_panel"] = self.build_TuTraSt_panel()
+        if project is not None:
 
-        self.content_layout.addStretch()
+
+
+            # Once the project is set, build all the control buttons and set their states
+            widgets["UC_panel"] = self.build_UC_panel()
+            widgets["isosurface_panel"] = self.build_isosurface_panel()
+            widgets["TuTraSt_panel"] = self.build_TuTraSt_panel()
+
+            self.content_layout.addStretch()
 
         return widgets
 

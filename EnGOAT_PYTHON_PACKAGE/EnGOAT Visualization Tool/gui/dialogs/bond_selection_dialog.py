@@ -194,7 +194,9 @@ class BondsDialog(QDialog):
                 continue
 
             visibility[bond_id] = state
+            self.bond_widgets[bond_type]["individual_bonds"][bond_id]["visible"].blockSignals(True)
             self.bond_widgets[bond_type]["individual_bonds"][bond_id]["visible"].setChecked(state)
+            self.bond_widgets[bond_type]["individual_bonds"][bond_id]["visible"].blockSignals(False)
 
         self.project.set_visibility("individual_bonds", visibility)
 
@@ -213,7 +215,9 @@ class BondsDialog(QDialog):
                 continue
 
             visibility[bond_id] = state
+            self.bond_widgets[bond_type]["individual_bonds"][bond_id]["label"].blockSignals(True)
             self.bond_widgets[bond_type]["individual_bonds"][bond_id]["label"].setChecked(state)
+            self.bond_widgets[bond_type]["individual_bonds"][bond_id]["label"].blockSignals(False)
 
         self.project.set_visibility("bond_labels", visibility)
 

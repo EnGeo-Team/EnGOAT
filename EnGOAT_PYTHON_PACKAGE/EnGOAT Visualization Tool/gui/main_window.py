@@ -133,6 +133,9 @@ class MainWindow(QMainWindow):
         # Create all widgets
         widgets = self.controls.build_control_panel(project)
 
+        if widgets == {}:
+            return None
+
         widgets["UC_panel"]["atoms_toggle"].stateChanged.connect(lambda state: project.set_visibility("atoms", bool(state)))
         widgets["UC_panel"]["choose_atoms_button"].clicked.connect(lambda _: self.open_atom_dialog())
 
@@ -322,6 +325,14 @@ class MainWindow(QMainWindow):
     
     def update_menus(self):
         project = self.current_project()
+
+        if project is None:
+            self.menus["unit_cell"]["menu"].clear()
+            self.menus["unit_cell"]["menu"].setEnabled(False)
+            self.menus["diffusion"]["menu"].clear()
+            self.menus["diffusion"]["menu"].setEnabled(False)
+            
+            return None
  
         # --- Unit cell menu ---
  

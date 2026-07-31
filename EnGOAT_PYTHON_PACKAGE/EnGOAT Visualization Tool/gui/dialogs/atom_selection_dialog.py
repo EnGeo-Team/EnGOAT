@@ -148,7 +148,9 @@ class AtomsDialog(QDialog):
 
         for atom_id in atom_ids:
             visibility[atom_id] = state
+            self.atom_widgets[atom_type]["individual_atoms"][atom_id]["visible"].blockSignals(True)
             self.atom_widgets[atom_type]["individual_atoms"][atom_id]["visible"].setChecked(state)
+            self.atom_widgets[atom_type]["individual_atoms"][atom_id]["visible"].blockSignals(False)
 
         self.project.set_visibility("individual_atoms", visibility)
 
@@ -163,7 +165,9 @@ class AtomsDialog(QDialog):
 
         for atom_id in atom_ids:
             visibility[atom_id] = state
+            self.atom_widgets[atom_type]["individual_atoms"][atom_id]["label"].blockSignals(True)
             self.atom_widgets[atom_type]["individual_atoms"][atom_id]["label"].setChecked(state)
+            self.atom_widgets[atom_type]["individual_atoms"][atom_id]["label"].blockSignals(False)
 
         self.project.set_visibility("atom_labels", visibility)
 

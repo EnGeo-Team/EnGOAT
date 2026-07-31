@@ -73,7 +73,9 @@ class GroupDialog(QDialog):
         self.project.set_visibility(key, visibility_dict)
 
         for item_id in ids:
+            widgets[str(item_id)]["visible"].blockSignals(True)
             widgets[str(item_id)]["visible"].setChecked(state)
+            widgets[str(item_id)]["visible"].blockSignals(False)
 
     def on_master_color_clicked(self, item_type, group_type, group_ID):
 
