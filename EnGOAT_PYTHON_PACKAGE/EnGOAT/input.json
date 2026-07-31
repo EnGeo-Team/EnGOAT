@@ -1,0 +1,20 @@
+{
+
+    "TuTraSt": {
+        "E_unit": "kJ/mol",
+        "E_step": 5,
+        "E_cutoff": 35.0,
+        "Dynamic_E_step": "off"
+    },
+
+    "kmc": {
+        "run": false,
+        "temperatures": [1000],
+        "steps": 1000000,
+        "runs": 5,
+        "particle_mass": 6.941e-3
+    },
+
+    "cube_file": "LGPS.cube"
+    
+}
