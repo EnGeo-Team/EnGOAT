@@ -275,11 +275,14 @@ class MainWindow(QMainWindow):
 
     def create_menus(self):
 
+        menubar = self.menuBar()
+        menubar.setNativeMenuBar(False)
+
         menus = {}
 
         # --- File menu ---
 
-        file_menu = self.menuBar().addMenu("File")
+        file_menu = menubar.addMenu("File")
         
         file_actions = {}
 
@@ -303,7 +306,7 @@ class MainWindow(QMainWindow):
 
         # --- Unit cell menu ---
 
-        unit_cell_menu = self.menuBar().addMenu("Unit cell")
+        unit_cell_menu = menubar.addMenu("Unit cell")
 
         unit_cell_menu.setEnabled(False)
 
@@ -311,7 +314,7 @@ class MainWindow(QMainWindow):
 
         # --- Diffusion menu ---
 
-        diffusion_menu = self.menuBar().addMenu("Diffusion")
+        diffusion_menu = menubar.addMenu("Diffusion")
 
         diffusion_menu.setEnabled(False)
 
