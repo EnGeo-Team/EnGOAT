@@ -18,6 +18,7 @@ from gui.dialogs.atom_selection_dialog import AtomsDialog
 from gui.dialogs.bond_selection_dialog import BondsDialog
 from gui.dialogs.group_dialog import GroupDialog
 from gui.dialogs.diffusion_dialog import DiffusionDialog
+from gui.dialogs.arrhenius_dialog import ArrheniusDialog
 from gui.dialogs.supercell_dialog import SupercellDialog
 
 from plotting.matplotlib.plot_merge_tree import create_merge_trees
@@ -255,8 +256,6 @@ class MainWindow(QMainWindow):
         project = self.current_project()
         create_merge_trees(project)
 
-        print("merge tree")
-
         return None
 
     def plot_E_diagram(self, ID):
@@ -383,12 +382,15 @@ class MainWindow(QMainWindow):
             for temperature in project.kMC_data:
                 
                 action = QAction(f"T = {float(temperature):g}", self)
-
                 action.triggered.connect(lambda _, temperature=temperature: self.open_diffusion_dialog(temperature))
-
                 self.menus["diffusion"]["menu"].addAction(action)
-
                 diffusion_actions[temperature] = action
+
+            action = QAction(f"Arrhenius plot", self)
+            action.triggered.connect(lambda _: self.open_arrhenius_dialog())
+            if len(project.kMC_data) < 2:
+                action.setEnabled(False)
+            self.menus["diffusion"]["menu"].addAction(action)
 
             self.menus["diffusion"]["actions"] = diffusion_actions
 
@@ -403,6 +405,15 @@ class MainWindow(QMainWindow):
             lambda: DiffusionDialog(project, temperature, parent=self)
         )
     
+        return None
+
+    def open_arrhenius_dialog(self):
+        project = self.current_project()
+
+        self.open_dialog(
+            f"Arrhenius Plot",
+            lambda: ArrheniusDialog(project, parent=self)
+        )
         return None
 
     def open_supercell_dialog(self):

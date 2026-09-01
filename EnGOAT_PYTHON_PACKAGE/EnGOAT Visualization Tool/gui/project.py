@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout
+from PySide6.QtCore import Signal
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,6 +10,8 @@ from plotting.helpers import element_color, covalent_radius, create_bond_data
 
 
 class Project(QWidget):
+    selected_basin_changed = Signal()
+    atom_visibility_changed = Signal()
 
     def __init__(self):
         super().__init__()
@@ -94,6 +97,12 @@ class Project(QWidget):
         self.viewer = PyVistaView(self)
         #self.viewer.set_project(self)
         layout.addWidget(self.viewer)
+
+        #Additional states for the plotting dialog commands
+        self.selected_basin = None
+        self.select_radius = 4
+
+        self.show_visible_bonds = False #To show bonds only between visible atoms
 
     #-----------------------------------------------------
     # lOADING THE STRUCTURE
@@ -244,6 +253,9 @@ class Project(QWidget):
 
     def set_visibility(self, attribute, state):             #For attributes containing complex states (dictionary), the input state has to be complex too
         self.visibility[attribute] = state
+        if attribute == "individual_atoms":
+            self.update_bonds_from_atom_visibility()
+            self.atom_visibility_changed.emit()
 
         self.viewer.update_all_actors()
         return None
@@ -350,3 +362,36 @@ class Project(QWidget):
 
         return None
 
+    #For the clicking update
+    def set_selected_basin(self, basin_id):
+        self.selected_basin = basin_id
+        self.selected_basin_changed.emit()
+
+
+    # Trigger function to change bond visibility to show only bonds between visible atoms and change the state
+    def set_show_visible_bonds(self, state):
+        self.show_visible_bonds = bool(state)
+
+        if self.show_visible_bonds:
+            self.update_bonds_from_atom_visibility()
+
+    # Change bond visibility to show only bonds between visible atoms
+    def update_bonds_from_atom_visibility(self):
+        if not self.show_visible_bonds:
+            return
+
+        atom_visibility = self.visibility["individual_atoms"]
+        bond_visibility = self.visibility["individual_bonds"].copy()
+
+        for bond_id, bond in self.bonds.items():
+            atom1, atom2 = bond["atoms"]
+
+            bond_visibility[bond_id] = (
+                bool(atom_visibility[atom1])
+                and bool(atom_visibility[atom2])
+            )
+
+        self.set_visibility(
+            "individual_bonds",
+            bond_visibility
+        )

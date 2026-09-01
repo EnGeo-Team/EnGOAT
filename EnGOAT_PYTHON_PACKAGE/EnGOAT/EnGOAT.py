@@ -83,7 +83,7 @@ cube_file = params["cube_file"]
 
 logger.info(">>> INITIALIZATION <<<")   
 logger.info("-"*80) 
-logger.info(f"{'Input file:':<25} {'input.param':>20}") 
+logger.info(f"{'Input file:':<25} {'input.json':>20}") 
 logger.info(f"{'Cube file:':<25} {cube_file:>20}")  
 logger.info("-"*80) 
 logger.info("") 

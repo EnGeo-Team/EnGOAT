@@ -1,7 +1,6 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QHBoxLayout, QPushButton, QButtonGroup
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QHBoxLayout, QPushButton, QButtonGroup, QDoubleSpinBox, QLabel, QGridLayout, QComboBox, QAbstractSpinBox
 from PySide6.QtCore import Qt
 from pyvistaqt import QtInteractor
-from PySide6.QtGui import QTextCursor
 
 import numpy as np
 import pyvista as pv
@@ -9,8 +8,6 @@ from plotting.helpers import pbc_images
 from plotting.helpers import get_pbc_ts_geometry, voxel_surface
 from plotting.helpers import all_bonds_inside_UC
 from plotting.helpers import cartesian_to_fractional
-
-from datetime import datetime
 
 #Clicking
 from enum import Enum
@@ -40,6 +37,12 @@ class PyVistaView(QWidget):
         #Plotting widget
         layout = QVBoxLayout(self)
         self.plotter = QtInteractor(self)
+
+        #camera widget
+        self.camera_widget = CameraWidget(self.plotter, parent=self.plotter)
+        self.camera_widget.move(10, 10)
+        self.camera_widget.raise_()
+
 
         self.plotter.setFocusPolicy(Qt.StrongFocus) #?
         self.plotter.setFocus() #?
@@ -227,6 +230,9 @@ class PyVistaView(QWidget):
         self.create_TS_actors()
         print("100    %")
 
+        self.plotter.reset_camera()
+        CameraWidget.save_initial_camera(self.camera_widget)
+
         return None
 
     def update_all_actors(self):
@@ -320,12 +326,26 @@ class PyVistaView(QWidget):
 
         # Main supercell outline
         for i, j in edges:
+            #actor = self.plotter.add_lines(
+            #    np.vstack((corners[i], corners[j])),
+            #    color="black",
+            #    width=3
+            #)
+            #actor.SetPickable(False)
+            #self.actors["UC"]["outline"].append(actor)
+
             actor = self.plotter.add_lines(
                 np.vstack((corners[i], corners[j])),
                 color="black",
-                width=3
+                width=3.0
             )
+
+            prop = actor.GetProperty()
+            prop.SetLineWidth(3.0)
+            prop.SetRenderLinesAsTubes(False)
+
             actor.SetPickable(False)
+
             self.actors["UC"]["outline"].append(actor)
 
         # Internal unit-cell grid (no outer outline)
@@ -925,6 +945,8 @@ class PyVistaView(QWidget):
             self.plotter.remove_actor(actor)
         self.click_actors.clear()
 
+        self.project.set_selected_basin(None)
+
         return None
 
     def mouse_clicked(self, actor):
@@ -941,7 +963,7 @@ class PyVistaView(QWidget):
             obj = PickedObject(kind, ID, self.project.basin_data[ID]["center"], self.PBC_basin_pos[ID])
         
         self.dispatch_click(obj)
-
+        return None
 
     def dispatch_click(self, obj):
 
@@ -964,6 +986,10 @@ class PyVistaView(QWidget):
         self.selected_objects = [obj]
         self.highlight(obj)
         self.display_object(obj)
+        if obj.kind == "basins":
+            self.project.set_selected_basin(obj.ID)
+        else:
+            self.project.set_selected_basin(None)
 
         return None
 
@@ -1179,659 +1205,270 @@ class PyVistaView(QWidget):
             self.info_box.append(f"Volume: {basin['V']:.2f} Å³")
             self.info_box.append(f"Area: {basin['A']:.2f} Å²")
 
+#-----------------------------------
+# camera control
+#-----------------------------------
 
-#
-#def closest_pbc_positions(self, copies1, copies2):
-#
-#    best1 = None
-#    best2 = None
-#
-#    min_dist = np.inf
-#
-#    for p1 in copies1:
-#
-#        for p2 in copies2:
-#
-#            dist = np.linalg.norm(p1 - p2)
-#
-#            if dist < min_dist:
-#
-#                min_dist = dist
-#
-#                best1 = p1
-#                best2 = p2
-#
-#    return best1, best2
-#
-#def pick_atom(self, point, threshold=0.8):
-#
-#    if not self.project.visibility["atoms"]:
-#        return None
-#
-#    best = None
-#    min_dist = np.inf
-#
-#    for atom_ID, copies in self.PBC_atom_pos.items():
-#
-#        if not self.project.visibility["individual_atoms"][atom_ID]:
-#            continue
-#
-#        for pos in copies:
-#
-#            dist = np.linalg.norm(point - pos)
-#
-#            if dist < min_dist:
-#                min_dist = dist
-#                best = pos
-#
-#        if best is not None:
-#            best_ID = atom_ID
-#
-#    if min_dist > threshold:
-#        return None
-#
-#    return PickedObject(
-#        kind="atom",
-#        ID=best_ID,
-#        position=best,
-#        copies=self.PBC_atom_pos[best_ID]
-#    )
-#
-#def pick_basin(self, point, threshold=0.8):
-#
-#    if self.project.view_mode != "graph":
-#        return None
-#
-#    best = None
-#    min_dist = np.inf
-#
-#    for basin_ID, copies in self.PBC_basin_pos.items():
-#
-#        if not self.project.visibility["individual_basins"][basin_ID]:
-#            continue
-#
-#        for pos in copies:
-#
-#            dist = np.linalg.norm(point - pos)
-#
-#            if dist < min_dist:
-#                min_dist = dist
-#                best = pos
-#
-#        if best is not None:
-#            best_ID = basin_ID
-#
-#    if min_dist > threshold:
-#        return None
-#
-#    return PickedObject(
-#        kind="basin",
-#        ID=best_ID,
-#        position=best,
-#        copies=self.PBC_basin_pos[best_ID]
-#    )
-#
-#def pick_object(self, point):
-#
-#    atom = self.pick_atom(point)
-#    basin = self.pick_basin(point)
-#
-#    if atom is None:
-#        return basin
-#
-#    if basin is None:
-#        return atom
-#
-#    atom_dist = np.linalg.norm(atom.position - point)
-#    basin_dist = np.linalg.norm(basin.position - point)
-#
-#    return atom if atom_dist < basin_dist else basin
-#
-#def selection_mode(self, obj):
-#
-#    self.clear_click_state()
-#
-#    self.selected_objects = [obj]
-#
-#    self.highlight(obj)
-#
-#    self.display_object(obj)
-#
-#def distance_mode(self, obj):
-#
-#    if len(self.selected_objects) == 2:
-#
-#        self.clear_click_state()
-#
-#    self.selected_objects.append(obj)
-#
-#    self.highlight(obj)
-#
-#    if len(self.selected_objects) == 2:
-#
-#        self.measure_distance(
-#            self.selected_objects[0],
-#            self.selected_objects[1]
-#        )
-#
-#def angle_mode(self, obj):
-#
-#    if len(self.selected_objects) == 3:
-#
-#        self.clear_click_state()
-#
-#    self.selected_objects.append(obj)
-#
-#    self.highlight(obj)
-#
-#    if len(self.selected_objects) == 3:
-#
-#        self.measure_angle(
-#            self.selected_objects
-#        )
-#
-#def highlight(self, obj):
-#
-#    if obj.kind == "atom":
-#
-#        radius = (
-#            self.project.plotting_data["atoms"]["radii"][
-#                self.project.atoms[obj.ID]["type"]
-#            ] * 1.2
-#        )
-#
-#        actor = self.plotter.add_mesh(
-#            pv.Sphere(center=obj.position, radius=radius),
-#            color="yellow",
-#            opacity=0.4,
-#            reset_camera=False
-#        )
-#
-#    else:
-#
-#        actor = self.plotter.add_mesh(
-#            pv.Sphere(center=obj.position, radius=0.35),
-#            color="yellow",
-#            opacity=0.5,
-#            reset_camera=False
-#        )
-#
-#    actor.SetPickable(False)
-#
-#    self.click_actors.append(actor)
-#
-#def clear_click_state(self):
-#
-#    self.selected_objects.clear()
-#
-#    for actor in self.click_actors:
-#
-#        self.plotter.remove_actor(actor)
-#
-#    self.click_actors.clear()
-#
-#def draw_distance(self, p1, p2):
-#
-#    poly = pv.PolyData()
-#
-#    poly.points = np.array([p1, p2])
-#
-#    poly.lines = np.array([2, 0, 1])
-#
-#    actor = self.plotter.add_mesh(
-#        poly,
-#        color="black",
-#        line_width=3,
-#        lighting=False,
-#        reset_camera=False
-#    )
-#
-#    actor.SetPickable(False)
-#
-#    self.click_actors.append(actor)
-#
-#def measure_distance(self, obj1, obj2):
-#
-#    p1, p2 = self.closest_pbc_positions(
-#        obj1.copies,
-#        obj2.copies
-#    )
-#
-#    self.draw_distance(p1, p2)
-#
-#    distance = np.linalg.norm(p1 - p2)
-#
-#    self.info_box.append(
-#        f"Distance ({obj1.ID} → {obj2.ID}) = {distance:.3f} Å"
-#    )
-#
-#    self.plotter.render()
-#
-#def measure_angle(self, objects):
-#
-#    obj1, obj2, obj3 = objects
-#
-#    p1, p2 = self.closest_pbc_positions(
-#        obj1.copies,
-#        obj2.copies
-#    )
-#
-#    _, p3 = self.closest_pbc_positions(
-#        [p2],
-#        obj3.copies
-#    )
-#
-#    v1 = p1 - p2
-#    v2 = p3 - p2
-#
-#    v1 /= np.linalg.norm(v1)
-#    v2 /= np.linalg.norm(v2)
-#
-#    angle = np.degrees(
-#        np.arccos(
-#            np.clip(np.dot(v1, v2), -1.0, 1.0)
-#        )
-#    )
-#
-#    self.draw_distance(p2, p1)
-#    self.draw_distance(p2, p3)
-#
-#    self.info_box.append(
-#        f"Angle ({obj1.ID} - {obj2.ID} - {obj3.ID}) = {angle:.2f}°"
-#    )
-#
-#    self.plotter.render()
-#
-#def display_object(self, obj):
-#
-#    self.info_box.clear()
-#
-#    if obj.kind == "atom":
-#
-#        atom = self.project.atoms[obj.ID]
-#
-#        self.info_box.append(f"Atom: {obj.ID}")
-#        self.info_box.append(f"Element: {atom['type']}")
-#        self.info_box.append(
-#            f"Position: ({obj.position[0]:.2f}, "
-#            f"{obj.position[1]:.2f}, "
-#            f"{obj.position[2]:.2f})"
-#        )
-#
-#    else:
-#
-#        basin = self.project.basin_data[obj.ID]
-#
-#        self.info_box.append(f"Basin {obj.ID}")
-#        self.info_box.append(f"Emin: {basin['E_min']:.2f} kJ/mol")
-#        self.info_box.append(f"Volume: {basin['V']:.2f} Å³")
-#        self.info_box.append(f"Area: {basin['A']:.2f} Å²")
+class CameraWidget(QWidget):
 
+    def __init__(self, plotter, parent=None):
+        super().__init__(parent)
 
+        self.plotter = plotter
+        self._updating = False
+        self.expanded = False
 
+        self.setObjectName("cameraWidget")
+        self.setFixedWidth(220)
+        self.setAttribute(Qt.WA_StyledBackground, True)
 
+        self.setStyleSheet("""
+            QWidget#cameraWidget {
+                background-color: #f8f8f8;
+                border: 1px solid #999;
+                border-radius: 4px;
+            }
+            QWidget#cameraHeader {
+                background-color: #e1e1e1;
+                border-radius: 3px;
+            }
+            QLabel {
+                font-size: 11px;
+            }
+            QLabel#cameraHeaderLabel {
+                font-size: 11px;
+                font-weight: bold;
+            }
+            QDoubleSpinBox {
+                font-size: 11px;
+                padding: 1px;
+            }
+            QPushButton {
+                font-size: 11px;
+            }
+        """)
 
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(4, 4, 4, 4)
+        main_layout.setSpacing(2)
 
+        # Header
+        self.header = QWidget()
+        self.header.setObjectName("cameraHeader")
+        self.header.setFixedHeight(26)
+        self.header.setAttribute(Qt.WA_StyledBackground, True)
 
+        header_layout = QHBoxLayout(self.header)
+        header_layout.setContentsMargins(6, 0, 6, 0)
+        header_layout.setSpacing(0)
 
+        self.header_label = QLabel("Camera")
+        self.header_label.setObjectName("cameraHeaderLabel")
 
+        self.header_arrow = QLabel("▼")
 
+        header_layout.addWidget(self.header_label)
+        header_layout.addStretch()
+        header_layout.addWidget(self.header_arrow)
 
+        self.header.mousePressEvent = self.toggle
+        self.header_label.mousePressEvent = self.toggle
+        self.header_arrow.mousePressEvent = self.toggle
 
+        main_layout.addWidget(self.header)
 
+        # Collapsible content
+        self.content = QWidget()
+        self.content.setVisible(False)
+        main_layout.addWidget(self.content)
 
+        layout = QVBoxLayout(self.content)
+        layout.setContentsMargins(2, 2, 2, 2)
+        layout.setSpacing(3)
 
+        # Camera fields
+        grid = QGridLayout()
+        grid.setSpacing(2)
 
+        self.fields = {}
 
+        # Position
+        grid.addWidget(QLabel("Position"), 0, 0, 1, 4)
 
+        for row, axis in enumerate(("X", "Y", "Z"), start=1):
+            grid.addWidget(QLabel(axis), row, 0)
+            spin = self.make_spinbox()
+            self.fields[f"position_{axis}"] = spin
+            grid.addWidget(spin, row, 1, 1, 3)
 
+        # Focal point
+        grid.addWidget(QLabel("Focal point"), 4, 0, 1, 4)
 
-#clicking logic TODO
+        for row, axis in enumerate(("X", "Y", "Z"), start=5):
+            grid.addWidget(QLabel(axis), row, 0)
+            spin = self.make_spinbox()
+            self.fields[f"focal_{axis}"] = spin
+            grid.addWidget(spin, row, 1, 1, 3)
 
+        # Up vector
+        grid.addWidget(QLabel("Up"), 8, 0, 1, 4)
 
-#    def highlight_basin(self, basin, color="yellow"):
-#
-#        points = self.basin_centers.get(basin.ID, [])
-#
-#        if len(points) == 0:
-#            return None
-#
-#        poly = pv.PolyData(points)
-#
-#        sphere = pv.Sphere(radius=0.4)
-#
-#        glyphs = poly.glyph(
-#            geom=sphere,
-#            orient=False,
-#            scale=False
-#        )
-#
-#        actor = self.plotter.add_mesh(
-#            glyphs,
-#            color=color,
-#            opacity=0.6,
-#            reset_camera=False
-#        )
-#
-#        return actor
-#
-#    def clear_selections(self):
-#    
-#        self.selected_atoms.clear()
-#    
-#        for name in [
-#            "highlight_actor_1",
-#            "highlight_actor_2",
-#            "distance_actor"
-#        ]:
-#            if hasattr(self, name):
-#                self.plotter.remove_actor(getattr(self, name))
-#    
-#    def pick_object(self, point):
-#    
-#        # -------------------------
-#        # Atoms
-#        # -------------------------
-#        if hasattr(self, "atom_positions") and self.project.show_atoms:
-#        
-#            mask = np.isin(
-#                self.atom_elements,
-#                list(self.visible_elements)
-#            )
-#    
-#            if np.any(mask):
-#            
-#                visible_positions = self.atom_positions[mask]
-#                visible_elements = self.atom_elements[mask]
-#    
-#                distances = np.linalg.norm(
-#                    visible_positions - point,
-#                    axis=1
-#                )
-#    
-#                idx = np.argmin(distances)
-#    
-#                if distances[idx] <= 0.8:
-#                
-#                    return (
-#                        visible_elements[idx],
-#                        visible_positions[idx],
-#                        "atom"
-#                    )
-#    
-#        # -------------------------
-#        # Basins
-#        # -------------------------
-#        basin_result = self.detect_clicked_basin(
-#            self.project,
-#            point
-#        )
-#    
-#        if basin_result is not None:
-#        
-#            basin, basin_pos = basin_result
-#    
-#            return (
-#                f"B{basin.ID}",
-#                basin_pos,
-#                "basin"
-#            )
-#    
-#        return None
-#    
-#    def create_highlight(self, label, pos, obj_type, color):
-#    
-#        if obj_type == "basin":
-#        
-#            basin_id = int(label.removeprefix("B"))
-#    
-#            basin = next(
-#                b for b in self.project.Basin_list
-#                if b.ID == basin_id
-#            )
-#    
-#            return self.highlight_basin(
-#                basin,
-#                color=color
-#            )
-#    
-#        radius = covalent_radius(label) * 0.5 + 0.1
-#    
-#        return self.plotter.add_mesh(
-#            pv.Sphere(center=pos, radius=radius),
-#            color=color,
-#            opacity=0.6,
-#            reset_camera=False
-#        )
-#    
-#    def get_selection_copies(self, label, pos, obj_type):
-#    
-#        if obj_type == "atom":
-#            return [pos]
-#    
-#        basin_id = int(label.removeprefix("B"))
-#    
-#        return self.basin_centers[basin_id]
-#
-#    def closest_pbc_points(self, points1, points2):
-#        
-#        min_dist = np.inf
-#        best_p1 = None
-#        best_p2 = None
-#
-#        for p1 in points1:
-#            for p2 in points2:
-#            
-#                dist = np.linalg.norm(p1 - p2)
-#
-#                if dist < min_dist:
-#                    min_dist = dist
-#                    best_p1 = p1
-#                    best_p2 = p2
-#        return min_dist, best_p1, best_p2
-#
-#    def draw_distance_actor(self, segments):
-#    
-#        if hasattr(self, "distance_actor"):
-#            self.plotter.remove_actor(self.distance_actor)
-#    
-#        poly = pv.PolyData()
-#    
-#        points = []
-#        lines = []
-#    
-#        idx = 0
-#    
-#        for s1, s2 in segments:
-#        
-#            points.append(s1)
-#            points.append(s2)
-#    
-#            lines.append([2, idx, idx + 1])
-#    
-#            idx += 2
-#    
-#        poly.points = np.array(points)
-#        poly.lines = np.array(lines)
-#    
-#        self.distance_actor = self.plotter.add_mesh(
-#            poly,
-#            color="black",
-#            line_width=1,
-#            lighting=False,
-#            reset_camera=False
-#        )
-#
-#    def handle_click(self):
-#
-#        if not hasattr(self, "atom_positions") and not hasattr(self, "basin_centers"):
-#            return
-#
-#        point = self.plotter.pick_mouse_position()
-#
-#        if point is None:
-#            return
-#
-#        picked = self.pick_object(np.array(point))
-#
-#        if picked is None:
-#            return
-#
-#        label, pos, obj_type = picked
-#
-#        # -------------------------
-#        # Reset after 2 selections
-#        # -------------------------
-#        if len(self.selected_atoms) == 2:
-#            self.clear_selections()
-#
-#        # -------------------------
-#        # Prevent duplicate click
-#        # -------------------------
-#        if len(self.selected_atoms) == 1:
-#
-#            _, prev_pos, _ = self.selected_atoms[0]
-#
-#            if np.linalg.norm(prev_pos - pos) < 1e-3:
-#                return
-#
-#        self.selected_atoms.append(
-#            (label, pos, obj_type)
-#        )
-#
-#        time = datetime.now().strftime("%H:%M:%S")
-#
-#        # -------------------------
-#        # First click
-#        # -------------------------
-#        if len(self.selected_atoms) == 1:
-#
-#            self.highlight_actor_1 = self.create_highlight(
-#                label,
-#                pos,
-#                obj_type,
-#                "yellow"
-#            )
-#
-#            info_text = (
-#                f"[{time}] {label}: "
-#                f"({pos[0]:.2f}, {pos[1]:.2f}, {pos[2]:.2f})"
-#            )
-#
-#        # -------------------------
-#        # Second click
-#        # -------------------------
-#        else:
-#
-#            self.highlight_actor_2 = self.create_highlight(
-#                label,
-#                pos,
-#                obj_type,
-#                "orange"
-#            )
-#
-#            (l1, p1, type1), (l2, p2, type2) = self.selected_atoms
-#
-#            copies1 = self.get_selection_copies(
-#                l1, p1, type1
-#            )
-#
-#            copies2 = self.get_selection_copies(
-#                l2, p2, type2
-#            )
-#
-#            _, line_p1, line_p2 = self.closest_pbc_points(
-#                copies1,
-#                copies2
-#            )
-#
-#            distance, segments = get_pbc_measurement(
-#                line_p1,
-#                line_p2,
-#                self.grid
-#            )
-#
-#            self.draw_distance_actor(segments)
-#
-#            info_text = (
-#                f"[{time}] {label}: "
-#                f"({pos[0]:.2f}, {pos[1]:.2f}, {pos[2]:.2f})\n"
-#                f"[{time}] Distance ({l1} → {l2}) = {distance:.3f} Å"
-#            )
-#
-#        self.info_box.append(info_text)
-#
-#        self.info_box.verticalScrollBar().setValue(
-#            self.info_box.verticalScrollBar().maximum()
-#        )
-#
-#        max_lines = 30
-#
-#        if self.info_box.document().blockCount() > max_lines:
-#
-#            cursor = self.info_box.textCursor()
-#
-#            cursor.movePosition(QTextCursor.Start)
-#            cursor.select(QTextCursor.LineUnderCursor)
-#            cursor.removeSelectedText()
-#
-#        self.plotter.render()
-#
-#
-#    def _plotter_mouse_press(self, event):
-#
-#        QtInteractor.mousePressEvent(self.plotter, event)
-#        if event.button() == Qt.LeftButton:
-#            self.plotter.render()
-#            self.handle_click()      
-#        
-#        if event.button() == Qt.RightButton:
-#            self.selected_atoms.clear()
-#
-#            if hasattr(self, "highlight_actor_1"):
-#                self.plotter.remove_actor(self.highlight_actor_1)
-#            if hasattr(self, "highlight_actor_2"):
-#                self.plotter.remove_actor(self.highlight_actor_2)
-#            if hasattr(self, "distance_actor"):
-#                self.plotter.remove_actor(self.distance_actor)
-#
-#            self.plotter.render()
-#
-#
-#    def detect_clicked_basin(self, project, point):
-#
-#        # ✅ Only allow in graph mode
-#        if project.view_mode != "graph":
-#            return None
-#
-#        if not hasattr(self, "basin_centers"):
-#            return None
-#
-#        point = np.array(point)
-#
-#        min_dist = float("inf")
-#        selected = None
-#        selected_pos = None
-#
-#        for b in project.Basin_list:
-#
-#            # ✅ only visible basins
-#            if not b.visible:
-#                continue
-#
-#            centers = self.basin_centers.get(b.ID, [])
-#
-#            for c in centers:
-#
-#                dist = np.linalg.norm(c - point)
-#
-#                if dist < min_dist:
-#                    min_dist = dist
-#                    selected = b
-#                    selected_pos = c
-#
-#        # ✅ threshold
-#        if min_dist < 0.8:
-#            return selected, selected_pos
-#
-#        return None
+        for row, axis in enumerate(("X", "Y", "Z"), start=9):
+            grid.addWidget(QLabel(axis), row, 0)
+            spin = self.make_spinbox()
+            self.fields[f"up_{axis}"] = spin
+            grid.addWidget(spin, row, 1, 1, 3)
+
+        # Parallel scale
+        grid.addWidget(QLabel("Scale"), 12, 0)
+
+        self.scale_spin = self.make_spinbox()
+        grid.addWidget(self.scale_spin, 12, 1, 1, 3)
+
+        layout.addLayout(grid)
+
+        # Projection
+        projection_layout = QHBoxLayout()
+        projection_layout.addWidget(QLabel("Projection"))
+
+        self.projection = QComboBox()
+        self.projection.addItems(["Perspective", "Orthographic"])
+
+        projection_layout.addWidget(self.projection)
+        layout.addLayout(projection_layout)
+
+        # Reset button
+        self.reset_button = QPushButton("Reset")
+        layout.addWidget(self.reset_button)
+
+        self.reset_button.clicked.connect(self.reset_camera)
+        self.projection.currentIndexChanged.connect(self.apply_camera)
+
+        # Listen for camera changes caused by mouse interaction
+        self.plotter.camera.AddObserver(
+            "ModifiedEvent",
+            self.camera_modified
+        )
+
+        self.update_from_camera()
+
+    def save_initial_camera(self):
+        camera = self.plotter.camera
+
+        self.initial_camera = {
+            "position": np.array(camera.position, dtype=float),
+            "focal_point": np.array(camera.focal_point, dtype=float),
+            "up": np.array(camera.up, dtype=float),
+            "parallel_scale": float(camera.parallel_scale),
+            "parallel_projection": bool(camera.parallel_projection),
+            "clipping_range": np.array(camera.clipping_range, dtype=float),
+        }
+
+    def toggle(self, event=None):
+        self.expanded = not self.expanded
+
+        self.content.setVisible(self.expanded)
+
+        if self.expanded:
+            self.header_arrow.setText("▲")
+        else:
+            self.header_arrow.setText("▼")
+
+        self.adjustSize()
+        self.update()
+        self.repaint()
+        self.raise_()
+
+    def make_spinbox(self):
+        spin = QDoubleSpinBox()
+        spin.setDecimals(4)
+        spin.setRange(-100000.0, 100000.0)
+        spin.setSingleStep(0.1)
+        spin.setFixedHeight(22)
+        spin.setMinimumWidth(135)
+        spin.setButtonSymbols(QAbstractSpinBox.UpDownArrows)
+        spin.valueChanged.connect(self.apply_camera)
+        return spin
+
+    def camera_modified(self, caller=None, event=None):
+        if self._updating:
+            return
+
+        self.update_from_camera()
+
+    def update_from_camera(self):
+        self._updating = True
+
+        camera = self.plotter.camera
+
+        for axis, value in zip(("X", "Y", "Z"), camera.position):
+            self.fields[f"position_{axis}"].setValue(value)
+
+        for axis, value in zip(("X", "Y", "Z"), camera.focal_point):
+            self.fields[f"focal_{axis}"].setValue(value)
+
+        for axis, value in zip(("X", "Y", "Z"), camera.up):
+            self.fields[f"up_{axis}"].setValue(value)
+
+        self.scale_spin.setValue(camera.parallel_scale)
+
+        self.projection.setCurrentText(
+            "Orthographic"
+            if camera.parallel_projection
+            else "Perspective"
+        )
+
+        self._updating = False
+
+    def apply_camera(self):
+        if self._updating:
+            return
+
+        self._updating = True
+
+        camera = self.plotter.camera
+
+        camera.position = [
+            self.fields["position_X"].value(),
+            self.fields["position_Y"].value(),
+            self.fields["position_Z"].value()
+        ]
+
+        camera.focal_point = [
+            self.fields["focal_X"].value(),
+            self.fields["focal_Y"].value(),
+            self.fields["focal_Z"].value()
+        ]
+
+        camera.up = [
+            self.fields["up_X"].value(),
+            self.fields["up_Y"].value(),
+            self.fields["up_Z"].value()
+        ]
+
+        camera.parallel_scale = self.scale_spin.value()
+
+        camera.parallel_projection = (
+            self.projection.currentText() == "Orthographic"
+        )
+
+        self.plotter.render()
+
+        self._updating = False
+
+    def reset_camera(self):
+        #if not hasattr(self.plotter, "_initial_camera"):
+        #    self.plotter.reset_camera()
+        #else:
+        camera = self.plotter.camera
+        state = self.initial_camera
+
+        camera.position = state["position"]
+        camera.focal_point = state["focal_point"]
+        camera.up = state["up"]
+        camera.parallel_scale = state["parallel_scale"]
+        camera.parallel_projection = state["parallel_projection"]
+        camera.clipping_range = state["clipping_range"]
+
+        self.update_from_camera()
+        self.plotter.render()
