@@ -4,7 +4,6 @@ import os
 import logging
 from concurrent.futures import ThreadPoolExecutor
 import data                                                                                             #Python file containing all the data-containing matrices used in the simulation
-#import get_process_cross_vector                                                                         #Fortran file containing subroutine that finds the cross vector of a cluster1->TS->cluster2 transition process
 import get_process_cross_vector
 logger = logging.getLogger(__name__)
 

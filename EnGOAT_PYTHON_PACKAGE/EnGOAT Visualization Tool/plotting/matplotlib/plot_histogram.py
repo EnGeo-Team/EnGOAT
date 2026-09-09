@@ -15,6 +15,8 @@ def plot_energy_histogram(histogram, title=None, color="steelblue"):
     else:
         width = min(b - a for a, b in zip(energies, energies[1:]))
 
+    energies = [energy - width for energy in energies]
+
     fig, ax = plt.subplots(figsize=(7, 4))
 
     ax.bar(
